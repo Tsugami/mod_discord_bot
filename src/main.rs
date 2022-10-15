@@ -1,3 +1,4 @@
+use database::Database;
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
@@ -5,6 +6,7 @@ use serenity::model::voice::VoiceState;
 use serenity::prelude::*;
 
 mod config;
+mod database;
 
 struct Handler;
 
@@ -46,6 +48,7 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
     let config = config::Config::load().unwrap();
+    let db = Database::new(&config).await.unwrap();
 
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES
