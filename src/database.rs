@@ -13,6 +13,12 @@ impl Database {
             .connect(&config.database_url)
             .await?;
 
+        // Run migrations, which updates the database's schema to the latest version.
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("Couldn't run database migrations");
+
         Ok(Database { pool })
     }
 }

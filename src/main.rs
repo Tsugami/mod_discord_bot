@@ -1,3 +1,4 @@
+use bot_context::BotContext;
 use database::Database;
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -5,10 +6,13 @@ use serenity::model::gateway::Ready;
 use serenity::model::voice::VoiceState;
 use serenity::prelude::*;
 
+mod bot_context;
 mod config;
 mod database;
 
-struct Handler;
+struct Handler {
+    ctx: BotContext,
+}
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -50,6 +54,8 @@ async fn main() {
     let config = config::Config::load().unwrap();
     let db = Database::new(&config).await.unwrap();
 
+    let ctx = BotContext::new(config, db);
+
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::GUILD_VOICE_STATES
@@ -58,8 +64,8 @@ async fn main() {
     // Create a new instance of the Client, logging in as a bot. This will
     // automatically prepend your bot token with "Bot ", which is a requirement
     // by Discord for bot users.
-    let mut client = Client::builder(&config.discord_token, intents)
-        .event_handler(Handler)
+    let mut client = Client::builder(&ctx.config.discord_token, intents)
+        .event_handler(Handler { ctx })
         .await
         .expect("Err creating client");
 
