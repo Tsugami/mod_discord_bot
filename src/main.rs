@@ -1,14 +1,24 @@
+use std::collections::HashMap;
+use std::sync::Arc;
+
 use bot_context::BotContext;
 use database::Database;
-use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::prelude::{ChannelId, UserId};
 use serenity::model::voice::VoiceState;
 use serenity::prelude::*;
+use serenity::{async_trait, http};
 
 mod bot_context;
 mod config;
 mod database;
+
+struct VoiceConnections;
+
+impl TypeMapKey for VoiceConnections {
+    type Value = Arc<RwLock<HashMap<UserId, ChannelId>>>;
+}
 
 struct Handler {
     ctx: BotContext,
@@ -21,9 +31,46 @@ impl EventHandler for Handler {
     //
     // Event handlers are dispatched through a threadpool, and so multiple
     // events can be dispatched simultaneously.
-    async fn voice_state_update(&self, _ctx: Context, voice: VoiceState) {
-        println!("teste");
-        println!("{:?}", voice);
+    async fn voice_state_update(&self, _ctx: Context, voice_state: VoiceState) {
+        let user_id = voice_state.user_id;
+
+        let voice_connections = {
+            let data_read = _ctx.data.read().await;
+            let voice_connections_lock = data_read
+                .get::<VoiceConnections>()
+                .expect("Expected VoiceConnections in TypeMap.")
+                .clone();
+
+            let voice_connection = voice_connections_lock.read().await;
+
+            voice_connection.get(&user_id)
+        };
+
+        // voice_connections.
+
+        // match self.ctx.voice_connections.get(&user_id) {
+        //     Some(ch) => match voice_state.channel_id {
+        //         Some(new_channel_id) => self.ctx.voice_connections.set(user_id, new_channel_id),
+        //         None => (),
+        //     },
+        //     None => (),
+        // }
+        // match old {
+        //     Some(old_voice) => match new.channel_id {
+        //         Some(ch_id) => {
+        //             println!(
+        //                 "trocou de canal, de {:?} para {:?}",
+        //                 old_voice.channel_id, ch_id
+        //             );
+        //         }
+        //         None => {
+        //             println!("saiu do canal {:?}", old_voice.channel_id);
+        //         }
+        //     },
+        //     None => {
+        //         println!("entrou no channel = {:?}", new.channel_id);
+        //     }
+        // }
     }
 
     async fn message(&self, ctx: Context, msg: Message) {
@@ -44,9 +91,32 @@ impl EventHandler for Handler {
     // private channels, and more.
     //
     // In this case, just print what the current user's username is.
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, bot_ctx: Context, ready: Ready) {
+        // ready
+
+        for guild in ready.guilds.iter() {
+            // guild.id.members(bot_ctx, 1000);
+            // for member in guild.id.members_iter(&bot_ctx) {}
+            for member in guild
+                .id
+                .members(&bot_ctx, Some(1_000 as u64), None)
+                .await
+                .unwrap()
+            {
+                println!("member {:?}", member);
+            }
+
+            for ch in guild.id.channels(&bot_ctx).await.unwrap().iter() {
+                println!("channel {:?}", ch)
+            }
+            // http::routing::Route::guild_members(guild.id.members());
+            println!("guildId: {:}", guild.id)
+        }
+
         println!("{} is connected!", ready.user.name);
     }
+    // get_guild_members
+    // todo
 }
 
 #[tokio::main]
