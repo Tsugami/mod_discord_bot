@@ -1,5 +1,6 @@
-CREATE TYPE
-    voice_state_update_type AS ENUM ('JOIN', 'LEAVE', 'SWITCH');
+-- Add migration script here
+
+CREATE TYPE voice_state_update_type AS ENUM ('JOIN', 'LEAVE', 'SWITCH');
 
 CREATE TABLE
     "voice_state_update" (

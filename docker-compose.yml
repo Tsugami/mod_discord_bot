@@ -12,6 +12,15 @@ services:
       POSTGRES_DB: mydb
     ports:
       - 5432:5432
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    links:
+    - db:db
+    depends_on:
+      - db
   rabbitmq:
     image: "rabbitmq:3.8-management-alpine"
     hostname: rabbitmq
