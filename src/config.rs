@@ -1,20 +1,20 @@
 use dotenv;
 
-use figment::{providers::Env, Error, Figment};
-use serde::Deserialize;
-
-#[derive(Deserialize)]
 pub struct Config {
     pub discord_token: String,
     pub database_url: String,
 }
 
 impl Config {
-    pub fn load() -> Result<Self, Error> {
+    pub fn load() -> Result<Self, std::env::VarError> {
         dotenv::dotenv().ok();
 
-        let config: Config = Figment::new().merge(Env::prefixed("MOD_")).extract()?;
+        let discord_token = std::env::var("DISCORD_TOKEN")?;
+        let database_url = std::env::var("DATABASE_URL")?;
 
-        return Ok(config);
+        return Ok(Self {
+            database_url,
+            discord_token,
+        });
     }
 }
