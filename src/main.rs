@@ -46,30 +46,16 @@ impl EventHandler for Handler {
                     .await
                     .unwrap();
 
-                match old_channel {
-                    None => self
-                        .ctx
-                        .database
-                        .create_voice_state_update(database::CreateVoiceStateUpdateInput {
-                            channel_id: Some(new_channel_id.to_string()),
-                            guild_id: voice_state.guild_id.unwrap().to_string(),
-                            user_id,
-                            old_channel_id: None,
-                        })
-                        .await
-                        .unwrap(),
-                    Some(old_channel_id) => self
-                        .ctx
-                        .database
-                        .create_voice_state_update(database::CreateVoiceStateUpdateInput {
-                            channel_id: Some(new_channel_id.to_string()),
-                            guild_id: voice_state.guild_id.unwrap().to_string(),
-                            user_id,
-                            old_channel_id: Some(old_channel_id),
-                        })
-                        .await
-                        .unwrap(),
-                }
+                self.ctx
+                    .database
+                    .create_voice_state_update(database::CreateVoiceStateUpdateInput {
+                        channel_id: Some(new_channel_id.to_string()),
+                        guild_id: voice_state.guild_id.unwrap().to_string(),
+                        user_id,
+                        old_channel_id: old_channel,
+                    })
+                    .await
+                    .unwrap();
             }
         };
     }
