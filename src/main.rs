@@ -20,20 +20,20 @@ impl EventHandler for Handler {
     async fn voice_state_update(&self, _ctx: Context, voice_state: VoiceState) {
         let user_id = voice_state.user_id.to_string();
 
-        let old_channel = self.ctx.voice_connections.get(&user_id).await.unwrap();
+        let old_channel_id = self.ctx.voice_connections.get(&user_id).await.unwrap();
 
         match voice_state.channel_id {
             None => {
                 self.ctx.voice_connections.rem(&user_id).await.unwrap();
 
-                if let Some(channel_id) = old_channel {
+                if let Some(_) = old_channel_id {
                     self.ctx
                         .database
                         .create_voice_state_update(database::CreateVoiceStateUpdateInput {
                             channel_id: None,
                             guild_id: voice_state.guild_id.unwrap().to_string(),
                             user_id,
-                            old_channel_id: Some(channel_id),
+                            old_channel_id,
                         })
                         .await
                         .unwrap()
@@ -52,7 +52,7 @@ impl EventHandler for Handler {
                         channel_id: Some(new_channel_id.to_string()),
                         guild_id: voice_state.guild_id.unwrap().to_string(),
                         user_id,
-                        old_channel_id: old_channel,
+                        old_channel_id,
                     })
                     .await
                     .unwrap();
