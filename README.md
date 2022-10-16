@@ -1,19 +1,17 @@
 # Mod Discord Bot
 
-adw
+moderation bot that saves the voice connection history of the guild members
 
-## Como entrar no container do PosgreSQL
+## How to run migrations
 
-`docker exec -it <container_name> bash`
-
-`psql -d mydb -U johndoe`
-<https://github.com/serenity-rs/serenity/blob/9cf0c7a6d6b7e6b89995f94ca8246d9dce20d95c/examples/e12_global_data/src/main.rs>
-<https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html#lifetime-annotations-in-struct-definitions>
+### Installation SQLX-CLI
 
 `cargo install sqlx-cli --no-default-features --features rustls,postgres`
 
+### Run migrations
+
 `cargo sqlx migrate run`
 
-## TODO
+### Create migration
 
-- change type collumn to enum
+`cargo sqlx migration add <name>`
