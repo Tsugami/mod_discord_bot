@@ -9,7 +9,7 @@ use poise::{
 use crate::bot_context::BotContext;
 
 use self::{
-    commands::{age, register},
+    commands::{register, voices},
     event_handler::handle_listener,
 };
 
@@ -34,7 +34,7 @@ impl DiscordBot {
                     prefix: Some("!".into()),
                     ..Default::default()
                 },
-                commands: vec![age(), register()],
+                commands: vec![voices(), register()],
                 listener: |ctx, event, framework, state| {
                     Box::pin(handle_listener(&ctx, event, framework, state))
                 },
