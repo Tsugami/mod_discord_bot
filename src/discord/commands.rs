@@ -49,8 +49,12 @@ pub async fn voices(
     Ok(())
 }
 
-#[poise::command(prefix_command)]
+#[poise::command(prefix_command, check = "is_owner")]
 pub async fn register(ctx: Context<'_>) -> Result<(), Error> {
     poise::builtins::register_application_commands_buttons(ctx).await?;
     Ok(())
+}
+
+async fn is_owner(ctx: Context<'_>) -> Result<bool, Error> {
+    Ok(ctx.author().id.to_string() == ctx.framework().user_data.ctx.config.owner_id)
 }
