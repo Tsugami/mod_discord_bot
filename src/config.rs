@@ -1,5 +1,6 @@
 use dotenv;
 
+#[derive(Clone)]
 pub struct Config {
     pub discord_token: String,
     pub database_url: String,
@@ -16,5 +17,9 @@ impl Config {
             database_url,
             discord_token,
         });
+    }
+
+    pub fn get_redis_url(self) -> String {
+        return "redis://127.0.0.1:6379/".to_string();
     }
 }
