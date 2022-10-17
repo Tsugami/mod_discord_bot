@@ -1,5 +1,14 @@
 use crate::discord::{Context, Error};
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, ButtonStyle, CreateButton, ReactionType};
+
+fn button(custom_id: &str, emoji: ReactionType) -> CreateButton {
+    let mut b = CreateButton::default();
+    b.custom_id(custom_id);
+    b.emoji(emoji);
+    b.style(ButtonStyle::Primary);
+
+    b
+}
 
 const LIMIT: i32 = 10;
 
@@ -45,7 +54,12 @@ pub async fn voices(
         response.push_str("\n");
     }
 
-    ctx.say(response).await?;
+    ctx.send(|m| {
+        m.content(response).components(|c| {
+            c.create_action_row(|row| row.add_button(button("next", "▶️".parse().unwrap())))
+        })
+    })
+    .await?;
     Ok(())
 }
 

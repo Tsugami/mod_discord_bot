@@ -1,4 +1,6 @@
 mod commands;
+mod custom_id;
+
 pub mod event_handler;
 
 use poise::{

@@ -1,4 +1,4 @@
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, interaction, Interaction};
 use poise::serenity_prelude::{Ready, VoiceState};
 
 use crate::{bot_context::BotContext, database};
@@ -18,6 +18,12 @@ pub async fn handle_listener(
 
         poise::Event::Ready { data_about_bot } => {
             ready_event(data_about_bot.to_owned());
+        }
+
+        poise::Event::InteractionCreate {
+            interaction: Interaction::MessageComponent(interaction),
+        } => {
+            println!("interaction {:?}", interaction)
         }
         _ => (),
     };
