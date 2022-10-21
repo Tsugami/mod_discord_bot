@@ -1,12 +1,14 @@
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::{self as serenity, Interaction, InteractionResponseType};
 use poise::serenity_prelude::{Ready, VoiceState};
 
+use crate::discord::commands::build_voice_message;
 use crate::{bot_context::BotContext, database};
 
+use super::custom_id::InteractionCustomId;
 use super::{Data, Error};
 
 pub async fn handle_listener(
-    _ctx: &serenity::Context,
+    ctx: &serenity::Context,
     event: &poise::Event<'_>,
     _framework: poise::FrameworkContext<'_, Data, Error>,
     user_data: &Data,
@@ -18,6 +20,32 @@ pub async fn handle_listener(
 
         poise::Event::Ready { data_about_bot } => {
             ready_event(data_about_bot.to_owned());
+        }
+
+        poise::Event::InteractionCreate {
+            interaction: Interaction::MessageComponent(interaction),
+        } => {
+            if let Some(InteractionCustomId::Page { user_id, page }) =
+                InteractionCustomId::from_str(interaction.data.custom_id.clone())
+            {
+                let data =
+                    build_voice_message(&interaction.guild_id.unwrap(), &user_data, &user_id, page)
+                        .await?;
+
+                match interaction
+                    .create_interaction_response(ctx, |m| {
+                        m.kind(InteractionResponseType::UpdateMessage)
+                            .interaction_response_data(|m| {
+                                m.content(data.content)
+                                    .components(|f| f.add_action_row(data.component_row))
+                            })
+                    })
+                    .await
+                {
+                    Err(v) => println!("err {}", v), // move this
+                    Ok(v) => println!("{:?}", v),
+                };
+            }
         }
         _ => (),
     };

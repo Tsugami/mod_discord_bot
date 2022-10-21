@@ -17,7 +17,7 @@ pub struct VoiceStateUpdatePaginationInput {
     pub guild_id: String,
     pub user_id: String,
     pub limit: i64,
-    // pub after_timestamp: Option<u32>,
+    pub skip: Option<i64>,
 }
 
 pub struct VoiceStateUpdatePaginationData {
@@ -79,10 +79,12 @@ impl Database {
             WHERE guild_id = $1 AND user_id = $2
             ORDER BY created_at desc
             LIMIT $3
+            OFFSET $4
         ",
             input.guild_id,
             input.user_id,
             input.limit,
+            input.skip.map_or(0, |f| f)
         )
         .fetch_all(&self.pool)
         .await?;
