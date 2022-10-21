@@ -18,9 +18,7 @@ pub enum VoiceConnectionError {
 
 impl VoiceConnections {
     pub fn new(config: Config) -> Self {
-        let url = config.get_redis_url();
-
-        let pool = PoolConfig::from_url(&url)
+        let pool = PoolConfig::from_url(&config.redis_url)
             .create_pool(Some(Runtime::Tokio1))
             .expect("Failed to create redis pool");
 
