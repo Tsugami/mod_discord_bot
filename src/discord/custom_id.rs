@@ -1,28 +1,13 @@
-use std::num::ParseIntError;
-
 use poise::serenity_prelude::UserId;
-use sqlx::types::time::PrimitiveDateTime;
 
-enum InteractionCustomId {
-    HomePage(UserId),
-    NextPage(UserId, PrimitiveDateTime),
-    PreviousPage(UserId, PrimitiveDateTime),
+pub enum InteractionCustomId {
+    Page { user_id: UserId, page: i64 },
 }
 
 impl InteractionCustomId {
-    pub fn to_string(self) -> String {
+    pub fn to_string(self, idx: &str) -> String {
         match self {
-            Self::HomePage(user_id) => format!("home_p:{}", user_id.to_string()),
-            Self::NextPage(user_id, after) => format!(
-                "next_p:{}:{}",
-                user_id.to_string(),
-                after.assume_utc().unix_timestamp()
-            ),
-            Self::PreviousPage(user_id, after) => format!(
-                "previous_p:{}:{}",
-                user_id.to_string(),
-                after.assume_utc().unix_timestamp()
-            ),
+            Self::Page { user_id, page } => format!("page:{}:{}:{}", user_id, page, idx),
         }
     }
 
@@ -32,33 +17,13 @@ impl InteractionCustomId {
 
         if let Some(first) = vec.first() {
             return match *first {
-                "home_p" => {
-                    if let Ok(user_id) = vec[1].parse::<u64>() {
-                        let user_id = UserId(user_id);
+                "page" => {
+                    let user_id = UserId(vec[1].parse::<u64>().unwrap()); // isso n deveria ser um unwrap
+                    let page = vec[2].parse::<i64>().unwrap();
 
-                        Some(Self::HomePage(user_id))
-                    } else {
-                        None
-                    }
+                    Some(Self::Page { user_id, page })
                 }
-                "next_p" => {
-                    if let Ok(user_id) = vec[1].parse::<u64>() {
-                        let user_id = UserId(user_id);
 
-                        Some(Self::HomePage(user_id))
-                    } else {
-                        None
-                    }
-                }
-                "previous_p" => {
-                    if let Ok(user_id) = vec[1].parse::<u64>() {
-                        let user_id = UserId(user_id);
-
-                        Some(Self::HomePage(user_id))
-                    } else {
-                        None
-                    }
-                }
                 _ => None,
             };
         }
