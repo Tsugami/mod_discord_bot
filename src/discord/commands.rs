@@ -76,10 +76,6 @@ pub async fn build_voice_message(
     let page_count = (data.count as f64 / LIMIT as f64).ceil() as i64;
     let has_next_page = page < page_count;
     let has_previous_page = page != 1;
-    println!(
-        "page_count {}, page {}, limit {},skip {}",
-        page_count, page, LIMIT, skip
-    );
 
     row.add_button(button(
         &InteractionCustomId::Page {
