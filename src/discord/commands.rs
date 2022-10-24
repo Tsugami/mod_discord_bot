@@ -1,5 +1,8 @@
 use super::{custom_id::InteractionCustomId, Data};
-use crate::discord::{Context, Error};
+use crate::{
+    discord::{Context, Error},
+    util::PadStr,
+};
 use poise::serenity_prelude::{
     self as serenity, ButtonStyle, CreateActionRow, CreateButton, GuildId, ReactionType,
 };
@@ -20,12 +23,28 @@ pub struct VoiceCommandMessage {
     pub component_row: CreateActionRow,
 }
 
+pub enum UserInput {
+    Id(serenity::UserId),
+    Data(serenity::User),
+}
+
+impl UserInput {
+    pub fn get_id(&self) -> serenity::UserId {
+        match self {
+            Self::Id(id) => id.to_owned(),
+            Self::Data(user) => user.id,
+        }
+    }
+}
+
 pub async fn build_voice_message(
     guild_id: &GuildId,
     user_data: &Data,
-    user_id: &serenity::UserId,
+    user: &UserInput, // muda isso para o Option<User>
     page: i64,
 ) -> Result<VoiceCommandMessage, Error> {
+    let user_id = user.get_id();
+
     let skip = (page - 1) * LIMIT;
 
     let data = user_data
@@ -79,7 +98,7 @@ pub async fn build_voice_message(
 
     row.add_button(button(
         &InteractionCustomId::Page {
-            user_id: user_id.to_owned(),
+            user_id: user_id,
             page: 1,
         }
         .to_string("home"),
@@ -89,7 +108,7 @@ pub async fn build_voice_message(
     if has_previous_page {
         row.add_button(button(
             &InteractionCustomId::Page {
-                user_id: user_id.to_owned(),
+                user_id: user_id,
                 page: page - 1,
             }
             .to_string("previous_page"),
@@ -124,14 +143,25 @@ pub async fn voices(
     let data = build_voice_message(
         &ctx.guild_id().unwrap(),
         ctx.framework().user_data,
-        &u.id,
+        &UserInput::Data(u.to_owned()),
         1,
     )
     .await?;
 
     ctx.send(|m| {
-        m.content(data.content)
-            .components(|c| c.add_action_row(data.component_row))
+        m.embed(|b| {
+            b.color(14423100)
+                .author(|a| {
+                    a.icon_url(u.avatar_url().map_or(u.default_avatar_url(), |v| v))
+                        .name(format!(
+                            "Logs do canal de voz de {}#{}",
+                            u.name,
+                            u.discriminator.to_string().pad_start(4, '0')
+                        ))
+                })
+                .description(&data.content)
+        })
+        .components(|c| c.add_action_row(data.component_row))
     })
     .await?;
     Ok(())

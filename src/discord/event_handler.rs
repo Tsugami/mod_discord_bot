@@ -1,9 +1,12 @@
-use poise::serenity_prelude::{self as serenity, Interaction, InteractionResponseType};
+use poise::serenity_prelude::{
+    self as serenity, CreateEmbed, Interaction, InteractionResponseType,
+};
 use poise::serenity_prelude::{Ready, VoiceState};
 
 use crate::discord::commands::build_voice_message;
 use crate::{bot_context::BotContext, database};
 
+use super::commands::UserInput;
 use super::custom_id::InteractionCustomId;
 use super::{Data, Error};
 
@@ -28,22 +31,33 @@ pub async fn handle_listener(
             if let Some(InteractionCustomId::Page { user_id, page }) =
                 InteractionCustomId::from_str(interaction.data.custom_id.clone())
             {
-                let data =
-                    build_voice_message(&interaction.guild_id.unwrap(), &user_data, &user_id, page)
-                        .await?;
+                let data = build_voice_message(
+                    &interaction.guild_id.unwrap(),
+                    &user_data,
+                    &UserInput::Id(user_id),
+                    page,
+                )
+                .await?;
 
                 match interaction
                     .create_interaction_response(ctx, |m| {
                         m.kind(InteractionResponseType::UpdateMessage)
                             .interaction_response_data(|m| {
-                                m.content(data.content)
-                                    .components(|f| f.add_action_row(data.component_row))
+                                m.embed(|b| {
+                                    if let Some(embed) = interaction.message.embeds.first() {
+                                        let em = CreateEmbed::from(embed.to_owned());
+                                        b.clone_from(&em.to_owned());
+                                    }
+
+                                    b.description(data.content)
+                                })
+                                .components(|f| f.add_action_row(data.component_row))
                             })
                     })
                     .await
                 {
                     Err(v) => println!("err {}", v), // move this
-                    Ok(v) => println!("{:?}", v),
+                    _ => (),
                 };
             }
         }
