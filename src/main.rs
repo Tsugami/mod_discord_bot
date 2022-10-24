@@ -6,6 +6,7 @@ mod bot_context;
 mod config;
 mod database;
 mod discord;
+mod util;
 mod voice_connections;
 
 #[tokio::main]
