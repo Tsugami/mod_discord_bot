@@ -58,10 +58,7 @@ pub async fn build_voice_message(
         })
         .await?;
 
-    let mut content = format!(
-        "{}'s account. {} voice connections.\n",
-        &user_id, data.count
-    );
+    let mut content = String::new();
 
     for i in data.data {
         let channel_message = match i.channel_id {
@@ -95,6 +92,14 @@ pub async fn build_voice_message(
     let page_count = (data.count as f64 / LIMIT as f64).ceil() as i64;
     let has_next_page = page < page_count;
     let has_previous_page = page != 1;
+
+    content.push_str(
+        format!(
+            "\n**Página {}/{} ({} registros)**",
+            page, page_count, data.count
+        )
+        .as_ref(),
+    );
 
     row.add_button(button(
         &InteractionCustomId::Page {
