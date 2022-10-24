@@ -64,18 +64,21 @@ pub async fn build_voice_message(
         let channel_message = match i.channel_id {
             Some(new_ch_id) => match i.old_channel_id {
                 None => {
-                    format!("<:voicejoin:1033909980631412747> <#{}>", new_ch_id)
+                    format!(
+                        "<:voicejoin:1033909980631412747> Entrou no canal <#{}>",
+                        new_ch_id
+                    )
                 }
                 Some(old_ch_id) => {
                     format!(
-                        "<:voiceswitch:1033909979498946631> <#{}> `->` <#{}>",
+                        "<:voiceswitch:1033909979498946631> Trocou de canal <#{}> para <#{}>",
                         old_ch_id, new_ch_id
                     )
                 }
             },
             None => {
                 format!(
-                    "<:voiceleave:1033909982678237225> <#{}>",
+                    "<:voiceleave:1033909982678237225> Saiu do canal <#{}>",
                     i.old_channel_id.unwrap()
                 )
             }
@@ -83,7 +86,7 @@ pub async fn build_voice_message(
 
         let timestamp = i.created_at.assume_utc().unix_timestamp().to_string();
         content.push_str(channel_message.as_str());
-        content.push_str(format!(" - <t:{}:f> (<t:{}:R>)", &timestamp, &timestamp).as_ref());
+        content.push_str(format!(" - <t:{}:t> <t:{}:R>", &timestamp, &timestamp).as_ref());
         content.push_str("\n");
     }
 
