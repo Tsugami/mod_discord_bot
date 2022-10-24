@@ -48,14 +48,20 @@ pub async fn build_voice_message(
         let channel_message = match i.channel_id {
             Some(new_ch_id) => match i.old_channel_id {
                 None => {
-                    format!("📥 <#{}>", new_ch_id)
+                    format!("<:voicejoin:1033909980631412747> <#{}>", new_ch_id)
                 }
                 Some(old_ch_id) => {
-                    format!("♻️ <#{}> `->` <#{}>", old_ch_id, new_ch_id)
+                    format!(
+                        "<:voiceswitch:1033909979498946631> <#{}> `->` <#{}>",
+                        old_ch_id, new_ch_id
+                    )
                 }
             },
             None => {
-                format!("📤 <#{}>", i.old_channel_id.unwrap())
+                format!(
+                    "<:voiceleave:1033909982678237225> <#{}>",
+                    i.old_channel_id.unwrap()
+                )
             }
         };
 
