@@ -18,8 +18,8 @@ impl InteractionCustomId {
         if let Some(first) = vec.first() {
             return match *first {
                 "page" => {
-                    let user_id = UserId(vec[1].parse::<u64>().unwrap()); // isso n deveria ser um unwrap
-                    let page = vec[2].parse::<i64>().unwrap();
+                    let user_id = UserId(vec[1].parse::<u64>().ok()?);
+                    let page = vec[2].parse::<i64>().ok()?;
 
                     Some(Self::Page { user_id, page })
                 }
