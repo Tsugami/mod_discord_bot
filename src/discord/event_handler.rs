@@ -6,7 +6,6 @@ use poise::serenity_prelude::{Ready, VoiceState};
 use crate::discord::commands::build_voice_message;
 use crate::{bot_context::BotContext, database};
 
-use super::commands::UserInput;
 use super::custom_id::InteractionCustomId;
 use super::{Data, Error};
 
@@ -31,13 +30,9 @@ pub async fn handle_listener(
             if let Some(InteractionCustomId::Page { user_id, page }) =
                 InteractionCustomId::from_str(interaction.data.custom_id.clone())
             {
-                let data = build_voice_message(
-                    &interaction.guild_id.unwrap(),
-                    &user_data,
-                    &UserInput::Id(user_id),
-                    page,
-                )
-                .await?;
+                let data =
+                    build_voice_message(&interaction.guild_id.unwrap(), &user_data, &user_id, page)
+                        .await?;
 
                 match interaction
                     .create_interaction_response(ctx, |m| {
