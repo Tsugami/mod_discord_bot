@@ -89,21 +89,23 @@ impl Database {
         .fetch_all(&self.pool)
         .await?;
 
-        let count = sqlx::query!(
-            "
-            SELECT COUNT(*)
-            FROM voice_state_update
-            WHERE guild_id = $1 AND user_id = $2
-        ",
-            input.guild_id,
-            input.user_id,
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        let count = match data.len() {
+            0 => 0,
+            _ => sqlx::query!(
+                "
+                SELECT COUNT(*)
+                FROM voice_state_update
+                WHERE guild_id = $1 AND user_id = $2
+                ",
+                input.guild_id,
+                input.user_id,
+            )
+            .fetch_one(&self.pool)
+            .await?
+            .count
+            .map_or(0, |v| v),
+        };
 
-        Ok(VoiceStateUpdatePaginationResult {
-            count: count.count.map_or(0, |v| v),
-            data,
-        })
+        Ok(VoiceStateUpdatePaginationResult { count, data })
     }
 }
